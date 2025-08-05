@@ -1,12 +1,14 @@
 # 1. Setup: Import necessary libraries
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 import os
 
-# Import the Google Generative AI library
+# Import the Google Generative AI library for LLM calls
 import google.generativeai as genai
+
+# Import Google Generative AI Embeddings for vector store creation
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 # Load environment variables from .env file (if present)
 from dotenv import load_dotenv
@@ -24,12 +26,16 @@ if not GOOGLE_API_KEY:
     print("Please set the GOOGLE_API_KEY environment variable with your Google AI Studio API key.")
     exit()
 
-# Configure the Google Generative AI client with the API key
+# Configure the Google Generative AI client with the API key for both LLM and Embeddings
 genai.configure(api_key=GOOGLE_API_KEY)
 print("Google Generative AI client configured.")
 
 
 def ragging(document_url_or_path):
+    """
+    Loads a PDF document, splits it into chunks, creates embeddings using Google's API,
+    and stores them in a Chroma vector database.
+    """
     document_path = document_url_or_path
     print(f"Loading document: {document_path}")
     try:
@@ -48,16 +54,16 @@ def ragging(document_url_or_path):
     chunks = text_splitter.split_documents(documents)
     print(f"Split document into {len(chunks)} chunks.")
 
-    # Initialize HuggingFace embeddings model for local embedding generation
-    embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    device = "cpu" # Using CPU for local embedding generation
-    print(f"Loading embedding model: {embedding_model_name} on {device}")
+    # Initialize Google Generative AI Embeddings model for API-based embedding generation
+    # 'models/text-embedding-004' is Google's latest and recommended embedding model.
+    # It uses the GOOGLE_API_KEY configured globally.
+    print("Initializing Google Generative AI Embeddings model: models/text-embedding-004")
     try:
-        embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name, model_kwargs={'device': device})
-        print("Embeddings loaded.")
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+        print("Google Generative AI Embeddings loaded.")
     except Exception as e:
-        print(f"Error loading embedding model: {e}")
-        print("Ensure you have 'sentence-transformers' installed (pip install sentence-transformers).")
+        print(f"Error initializing Google Generative AI Embeddings: {e}")
+        print("Ensure 'langchain-google-genai' is installed and your GOOGLE_API_KEY is valid and has access to embedding models.")
         exit()
 
     # Create or load the Chroma vector store
@@ -80,6 +86,10 @@ def ragging(document_url_or_path):
     return retriever
 
 def query_rag(query_text: str, retriever):
+    """
+    Retrieves relevant documents based on the query and uses a Google Generative AI model
+    (e.g., Gemini) to generate an answer based on the retrieved context.
+    """
     print(f"\nRetrieving documents for query: '{query_text}'")
     
     # Retrieve relevant documents from the vector store
