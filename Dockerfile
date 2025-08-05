@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y \
 # ChromaDB requires sqlite3 >= 3.35.0. We'll install a newer version.
 ENV SQLITE_VERSION 3.45.3
 RUN set -ex \
-    && wget https://www.sqlite.org/2024/sqlite-autoconf-$SQLITE_VERSION.tar.gz \
+    # Corrected URL for sqlite-autoconf-3.45.3.tar.gz as of recent check
+    && wget https://www.sqlite.org/2024/sqlite-autoconf-3450300.tar.gz -O sqlite-autoconf-$SQLITE_VERSION.tar.gz \
     && tar xzf sqlite-autoconf-$SQLITE_VERSION.tar.gz \
     && cd sqlite-autoconf-$SQLITE_VERSION \
     && ./configure --prefix=/usr/local \
