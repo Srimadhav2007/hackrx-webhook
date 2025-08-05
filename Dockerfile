@@ -18,17 +18,19 @@ RUN apt-get update && apt-get install -y \
 # --- Upgrade sqlite3 from source ---
 # ChromaDB requires sqlite3 >= 3.35.0. We'll install a newer version.
 ENV SQLITE_VERSION 3.45.3
+# Define the actual directory name that tar extracts (e.g., for 3.45.3, it's 3450300)
+ENV SQLITE_EXTRACTED_DIR sqlite-autoconf-3450300
 RUN set -ex \
     # Corrected URL for sqlite-autoconf-3.45.3.tar.gz as of recent check
     && wget https://www.sqlite.org/2024/sqlite-autoconf-3450300.tar.gz -O sqlite-autoconf-$SQLITE_VERSION.tar.gz \
     && tar xzf sqlite-autoconf-$SQLITE_VERSION.tar.gz \
-    && cd sqlite-autoconf-$SQLITE_VERSION \
+    && cd $SQLITE_EXTRACTED_DIR \ # CHANGED: Use the actual extracted directory name
     && ./configure --prefix=/usr/local \
     && make \
     && make install \
     && ldconfig \
     && cd /app \
-    && rm -rf sqlite-autoconf-$SQLITE_VERSION sqlite-autoconf-$SQLITE_VERSION.tar.gz
+    && rm -rf $SQLITE_EXTRACTED_DIR sqlite-autoconf-$SQLITE_VERSION.tar.gz # CHANGED: Use the actual extracted directory name for cleanup
 
 # Ensure Python's sqlite3 module uses the newly installed library
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
