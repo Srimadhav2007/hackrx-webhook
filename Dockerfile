@@ -1,7 +1,7 @@
 # Use a base Python image based on a newer Debian release (Bullseye or Bookworm)
-FROM python:3.10-slim-bullseye # Recommended: Debian 11 "Bullseye"
+FROM python:3.10-slim-bullseye
 # Alternatively, for the very latest:
-# FROM python:3.10-slim-bookworm # Debian 12 "Bookworm"
+# FROM python:3.10-slim-bookworm
 
 # Set the working directory
 WORKDIR /app
